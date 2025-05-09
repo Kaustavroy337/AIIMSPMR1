@@ -38,9 +38,7 @@
 </head>
 <body>
   <div id="display"></div>
-  
-  <!-- Add the audio element -->
-  <audio id="tokenSound" src="notification-alert-1-331727.mp3" preload="auto"></audio>
+  <audio id="notificationSound" src="notification-alert-1-331727.mp3" preload="auto"></audio>
 
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
@@ -53,7 +51,8 @@
       const DOCTOR_1 = 'Dr. Swapnil S';
       const DOCTOR_2 = 'Dr. Swapnil S'; // CHANGE THIS if Doctor 2 is different
 
-      let lastTokenNumber = null; // To track token changes
+      let lastTokenNumber = null;
+      const notificationSound = document.getElementById('notificationSound');
 
       async function fetchDoctorToken(doctorName) {
         const { data, error } = await supabaseClient
@@ -73,7 +72,6 @@
 
       async function updateDisplay() {
         const displayDiv = document.getElementById('display');
-        const audio = document.getElementById('tokenSound');
         displayDiv.innerHTML = 'Loading...';
 
         let tokenData = await fetchDoctorToken(DOCTOR_1);
@@ -94,14 +92,15 @@
           <div class="token-number">${tokenData["TOKEN NUMBER"]}</div>
         `;
 
-        // Play the sound if the token number has changed
-        if (tokenData["TOKEN NUMBER"] !== lastTokenNumber) {
-          if (lastTokenNumber !== null) { // Avoid playing sound on first load
-            audio.currentTime = 0;
-            audio.play().catch(e => console.log('Audio play error:', e));
-          }
-          lastTokenNumber = tokenData["TOKEN NUMBER"];
+        // Check if the token number has changed
+        const currentToken = tokenData["TOKEN NUMBER"];
+        if (lastTokenNumber !== null && currentToken !== lastTokenNumber) {
+          console.log("Token changed! Playing sound.");
+          notificationSound.play().catch((err) => {
+            console.error("Audio play failed:", err);
+          });
         }
+        lastTokenNumber = currentToken;
       }
 
       // Initial load
